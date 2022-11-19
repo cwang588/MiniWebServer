@@ -5,13 +5,40 @@
 #ifndef MINIWEBSERVER_THREADPOOL_H
 #define MINIWEBSERVER_THREADPOOL_H
 
+#include<pthread.h>
+#include<list>
+#include"locker.h"
+
 template<typename T>
 class ThreadPool {
 public:
-    ThreadPool(int actor_model, con);
+    enum ActorModel{
+        PROACTOR,
+        REACTOR
+    };
+public:
+    ThreadPool(int actor_model);
+
     ~ThreadPool();
-    bool Append();
-    bool AppendP();
+
+    bool Append(T *request, int state);
+
+    bool AppendP(T *request);
+
+private:
+    static void *Work(void *arg);
+
+    void Run();
+
+private:
+    int max_thread_;
+    int max_request_;
+    pthread_t *threads_;
+    std::list<T *> work_queue_;
+    Locker queue_locker_;
+    Semaphore queue_status_;
+    ConnectionPool *connection_pool_;
+    int actor_model_;
 };
 
 #endif //MINIWEBSERVER_THREADPOOL_H

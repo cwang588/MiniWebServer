@@ -13,9 +13,9 @@
 
 class HttpConnection {
 public:
-    static const int kFileNameLen=200;
-    static const int kReadBufferSize=2048;
-    const int kWriteBufferSize=1024;
+    static const int kFileNameLen = 200;
+    static const int kReadBufferSize = 2048;
+    const int kWriteBufferSize = 1024;
     enum Method {
         GET,
         POST,
@@ -103,6 +103,7 @@ private:
     bool AddLinger();
 
     bool AddBlankLine();
+
 public:
     static int epoll_fd_;
     static int user_count_;
@@ -133,7 +134,7 @@ private:
     int bytes_to_send_;
     int bytes_have_sent_;
     char *document_root_;
-    std::map<std::string,std::string>users_;
+    std::map<std::string, std::string> users_;
     int trig_mode_;
     int close_log_;
     char sql_user_[105];
