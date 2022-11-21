@@ -34,46 +34,52 @@ void ConnectionPool::init(std::string url, std::string user, std::string passwor
             exit(1);
         }
         connection_pool_.push_back(connection);
-        ++free_connection;
+        ++free_connection_;
     }
-    reserve_ = Semaphore(free_connection);
-    max_connection = free_connection;
+    reserve_ = Semaphore(free_connection_);
+    max_connection = free_connection_;
 }
 
 MYSQL *ConnectionPool::GetConnection() {
-    if (connection_pool_.size() == 0)return nullptr;
+    if (connection_pool_.empty())return nullptr;
     MYSQL *connection = nullptr;
     reserve_.Wait();
     locker_.Lock();
     connection = connection_pool_.front();
     connection_pool_.pop_front();
-    --current_connection, ++current_connection;
+    --current_connection_, ++current_connection_;
     locker_.Unlock();
     return connection;
 }
 
 bool ConnectionPool::ReleaseConnection(MYSQL *connection) {
-    if(connection== nullptr)return false;
+    if (connection == nullptr)return false;
     locker_.Lock();
     connection_pool_.push_back(connection);
-    ++free_connection, --current_connection;
+    ++free_connection_, --current_connection_;
     locker_.Unlock();
     reserve_.Post();
     return true;
 }
 
-void ConnectionPool::DestroyPool(){
+void ConnectionPool::DestroyPool() {
     locker_.Lock();
-    if(connection_pool_.size()){
-        for(auto connection:connection_pool_){
+    if (!connection_pool_.empty()) {
+        for (auto connection: connection_pool_) {
             mysql_close(connection);
         }
-        current_connection=free_connection=0;
+        current_connection_ = free_connection_ = 0;
         connection_pool_.clear();
     }
     locker_.Unlock();
 }
 
-int ConnectionPool::GetFreeConnection() {
-    return free_connection;
+int ConnectionPool::GetFreeConnection() const {
+    return free_connection_;
+}
+
+ConnectionRAII::ConnectionRAII(MYSQL **connection, ConnectionPool *connection_pool) : connection_pool_(
+        connection_pool) {
+    *connection = connection_pool_->GetConnection();
+    connection_raii_ = *connection;
 }

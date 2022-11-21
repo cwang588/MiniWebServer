@@ -3,7 +3,7 @@
 //
 
 #include "../header/threadpool.h"
-
+#include "../header/connectionpool.h"
 template<typename T>
 ThreadPool<T>::ThreadPool(int actor_model, ConnectionPool *connection_pool, int max_thread,
                           int max_request):actor_model_(actor_model), connection_pool_(connection_pool),
@@ -84,7 +84,7 @@ void ThreadPool<T>::Run() {
 }
 
 template<typename T>
-static void *ThreadPool<T>::Work(void *arg) {
+void *ThreadPool<T>::Work(void *arg) {
     ThreadPool *thread_pool = (ThreadPool *) arg;
     thread_pool->Run();
     return thread_pool;

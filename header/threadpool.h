@@ -8,16 +8,18 @@
 #include<pthread.h>
 #include<list>
 #include"locker.h"
+#include"connectionpool.h"
 
 template<typename T>
 class ThreadPool {
 public:
-    enum ActorModel{
+    enum ActorModel {
         PROACTOR,
         REACTOR
     };
 public:
-    ThreadPool(int actor_model);
+    ThreadPool(int actor_model, ConnectionPool *connection_pool, int max_thread,
+               int max_request);
 
     ~ThreadPool();
 

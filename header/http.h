@@ -5,11 +5,16 @@
 #ifndef MINIWEBSERVER_HTTP_H
 #define MINIWEBSERVER_HTTP_H
 
+#include "locker.h"
+#include "connectionpool.h"
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string>
 #include <map>
 #include <mysql/mysql.h>
+#include <fcntl.h>
+#include <sys/epoll.h>
+#include <unistd.h>
 
 class HttpConnection {
 public:
