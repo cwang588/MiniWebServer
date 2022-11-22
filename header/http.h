@@ -11,16 +11,22 @@
 #include <arpa/inet.h>
 #include <string>
 #include <map>
-#include <mysql/mysql.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <mysql/mysql.h>
+#include <fstream>
+#include <cstring>
+#include <sys/stat.h>
+#include <sys/uio.h>
+#include <cerrno>
+#include <sys/mman.h>
 
 class HttpConnection {
 public:
     static const int kFileNameLen = 200;
     static const int kReadBufferSize = 2048;
-    const int kWriteBufferSize = 1024;
+    static const int kWriteBufferSize = 1024;
     enum Method {
         GET,
         POST,
@@ -52,13 +58,18 @@ public:
         LINE_BAD,
         LINE_OPEN
     };
+    enum TrigMode {
+        IN,
+        ET
+    };
 public:
-    HttpConnection();
+    HttpConnection(){}
 
-    ~HttpConnection();
+    ~HttpConnection(){}
 
-    void Init(int socket_fd, const sockaddr_in &address, char *, int, int, std::string user, std::string password,
-              std::string sql_name);
+    void
+    Init(int socket_fd, const sockaddr_in &address, char *document_root, int trig_mode, int close_log, std::string user,
+         std::string password, std::string sql_name);
 
     void CloseConnection(bool real_close = true);
 
@@ -68,7 +79,9 @@ public:
 
     bool Write();
 
-    sockaddr_in *GetAddress();
+    sockaddr_in *GetAddress() {
+        return &address_;
+    };
 
     void InitMysqlResult(ConnectionPool *connection_pool);
 
@@ -112,19 +125,20 @@ private:
 public:
     static int epoll_fd_;
     static int user_count_;
-    MYSQL *mysql;
-    int state_;
+    MYSQL *mysql_;
+    int state_, timer_flag_;
+    int improv_; //todo:rename the variable to a reasonable name
 private:
     int socket_fd_;
     sockaddr_in address_;
-    char read_buffer_;
+    char read_buffer_[kReadBufferSize];
     int read_index_;
     int check_index_;
     int start_line_;
-    char write_buf_[kReadBufferSize];
+    char write_buffer_[kWriteBufferSize];
     int write_index_;
     CheckState check_state_;
-    Method method;
+    Method method_;
     char real_file_[kFileNameLen];
     char *url_;
     char *version_;
@@ -132,8 +146,9 @@ private:
     int content_length_;
     bool linger_;
     char *file_address_;
-
-
+    struct stat file_stat_;
+    struct iovec iv_[2];
+    int iv_count_;
     int cgi_;
     char *string_;
     int bytes_to_send_;

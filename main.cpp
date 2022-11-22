@@ -1,6 +1,7 @@
 #include <iostream>
 using namespace std;
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    char s='\0';
+    printf("%d",s);
     return 0;
 }
