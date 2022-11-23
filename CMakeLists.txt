@@ -3,4 +3,4 @@ project(MiniWebServer)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(MiniWebServer main.cpp header/locker.h header/http.h source/http.cpp source/locker.cpp header/threadpool.h source/threadpool.cpp header/connectionpool.h source/connectionpool.cpp)
+add_executable(MiniWebServer main.cpp header/locker.h header/http.h source/http.cpp source/locker.cpp header/threadpool.h source/threadpool.cpp header/connectionpool.h source/connectionpool.cpp header/blockqueue.h source/blockqueue.cpp header/log.h source/Log.cpp header/timer.h source/timer.cpp)
